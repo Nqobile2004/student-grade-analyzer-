@@ -16,27 +16,28 @@ function getInsight(avg) {
   return "👍 Average performance";
 }
 
-// ➕ Add student (saves to backend)
 async function addStudent() {
+  console.log("Button clicked");
+
   const name = document.getElementById("name").value;
-  const math = +document.getElementById("math").value;
-  const science = +document.getElementById("science").value;
-  const english = +document.getElementById("english").value;
 
-  if (!name || !math || !science || !english) {
-    alert("Please fill all fields");
-    return;
+  try {
+    const res = await fetch("http://localhost:5000/students/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name, math: 50, science: 60, english: 70 })
+    });
+
+    console.log("Response:", res);
+
+    loadStudents();
+
+  } catch (error) {
+    console.log("ERROR:", error);
   }
-
-  await fetch("http://localhost:5000/students/add", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ name, math, science, english })
-  });
-
-  loadStudents();
+}
 }
 
 // 📥 Load students from backend
