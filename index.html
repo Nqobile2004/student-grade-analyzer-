@@ -204,6 +204,9 @@ body.admin .admin-login { background: #ef4444; }
 </div>
 
 <div class="container">
+    <button class="admin-login" id="adminBtn" onclick="isAdmin ? logoutAdmin() : checkAdmin()">
+    🔐 Admin Login
+</button>
     <form id="addForm">
         <input type="hidden" id="editIndex">
         <input type="text" id="name" placeholder="Student name" required>
