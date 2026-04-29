@@ -1,45 +1,56 @@
 # 📊 Student Grade Analyzer
 
-A simple, client-side web app to calculate student averages, assign grades, and track pass/fail rates. Built with vanilla HTML, CSS, and JavaScript.
+Live Demo: https://nqobile2004.github.io/student-grade-analyzer-/
+
+A responsive web app to add, analyze, and visualize student grades. Built with vanilla JavaScript, HTML5, and Chart.js. No frameworks, no backend — everything runs in the browser.
+
+![App Screenshot](https://via.placeholder.com/800x400/1e293b/38bdf8?text=Add+your+screenshot+here)
 
 ### ✨ Features
-- Add students + test marks on the fly
-- Calculates average, highest, and lowest mark per student
-- Auto letter grading: A, B, C, D, F
-- Pass/Fail status with 50% pass mark
-- Class summary: average, pass count, pass rate
-- Saves data to browser with localStorage
-- Responsive dark theme
- - Live bar chart of class averages using Chart.js
-- Export all results to CSV
-- Clear data button for resets
--  Full CRUD: Add, edit, delete students
-- Live Chart.js bar graph with pass/fail colors
-- Export to CSV
-- LocalStorage persistence
- - Import students from CSV
-- Real-time search and filtering
-- Dark/light theme toggle with preference saving
-- Mobile responsive design
 
-### 🚀 Live Demo
-[View it on GitHub Pages](https://nqobile2004.github.io/student-grade-analyzer-/)
+**Core Functionality**
+- Full CRUD operations: Add, edit, delete students
+- Automatic grade calculation: A-F grading scale
+- Pass/Fail detection with 50% threshold
+
+**Data Visualization & Insights**
+- Live Chart.js bar graph showing class rankings
+- Ranking system with gold/silver/bronze for top 3
+- Smart insights: "🏆 Top Performer", "📈 Improving", "⚠️ At Risk"
+- Class statistics: average, pass rate, student count
+
+**Data Management**
+- Import/Export CSV functionality
+- Real-time search and filtering
+- LocalStorage persistence - data saves automatically
+
+**UI/UX**
+- Dark/Light theme toggle with preference saving
+- Mobile responsive design
+- Clean card-based layout with hover effects
 
 ### 🛠️ Tech Stack
-HTML5, CSS3, Vanilla JavaScript. No dependencies.
 
-### 📸 Screenshot
-> Add a screenshot here once it's live
+| Tech | Usage |
+| --- | --- |
+| HTML5 | Semantic structure |
+| CSS3 | Custom styling, CSS variables, responsive grid |
+| JavaScript ES6+ | DOM manipulation, localStorage, file handling |
+| Chart.js | Data visualization |
 
-### 🔧 How to Use
-1. Open the live link or `index.html` locally
-2. Enter student name + marks separated by commas
-3. Click "Add Student" to see results update instantly
+### 🚀 How to Use
 
-### 📈 Future Ideas
-- Export to CSV
-- Chart.js bar graph of class results
-- Edit/delete students
-- Customizable pass mark
+1. **Add Student**: Enter name and comma-separated marks → Click "Add Student"
+2. **Edit**: Click "Edit" on any card → Update details → "Update Student" 
+3. **Delete**: Click "Delete" to remove a student
+4. **Search**: Type in search bar to filter students instantly
+5. **Import**: Click "Import CSV" to bulk upload students
+6. **Export**: Click "Export CSV" to download results
+7. **Theme**: Click "🌙 Dark / ☀️ Light" to toggle themes
 
-Made by [Nqobile2004](https://github.com/Nqobile2004)
+**CSV Format for Import:**
+```csv
+Name,Tests
+John Doe,88;92;85
+Jane Smith,70;75;72
+
