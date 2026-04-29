@@ -28,30 +28,15 @@ async function addStudent() {
     return;
   }
 
-  const average = ((math + science + english) / 3).toFixed(1);
+  await fetch("http://localhost:5000/students/add", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ name, math, science, english })
+  });
 
-  const student = {
-    name,
-    average: Number(average),
-    grade: getGrade(average),
-    status: average >= 50 ? "Pass" : "Fail"
-  };
-
-  try {
-    await fetch("http://localhost:5000/students/add", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(student)
-    });
-
-    loadStudents(); // refresh list
-    clearInputs();
-
-  } catch (error) {
-    console.error("Error adding student:", error);
-  }
+  loadStudents();
 }
 
 // 📥 Load students from backend
