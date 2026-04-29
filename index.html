@@ -6,34 +6,6 @@
 <title>Student Grade Analyzer</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-    /* Hide admin controls by default */
-#addForm, .card-actions, .btn-group { 
-    display: none; 
-}
-
-/* Show when admin */
-body.admin #addForm, 
-body.admin .card-actions, 
-body.admin .btn-group { 
-    display: grid; 
-}
-
-.admin-login {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--accent);
-    color: #0f172a;
-    border: none;
-    border-radius: 50px;
-    padding: 12px 20px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    z-index: 100;
-    width: auto;
-}
-body.admin .admin-login { background: #ef4444; }
     :root {
         --bg-gradient: linear-gradient(135deg, #0f172a, #1e293b);
         --card-bg: #1e293b;
@@ -195,6 +167,32 @@ body.admin .admin-login { background: #ef4444; }
     }
 .file-input { display: none; }
 .hidden { display: none; }
+
+    /* ADMIN MODE STYLES */
+    #addForm,.btn-group { display: none; }
+   .card-actions { display: none; }
+    body.admin #addForm { display: block; }
+    body.admin.btn-group { display: grid; }
+    body.admin.card-actions { display: flex; }
+
+   .admin-login {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--accent);
+        color: #0f172a;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 100;
+        width: auto;
+    }
+   .admin-login:hover { background: var(--accent-hover); }
+    body.admin.admin-login { background: #ef4444; }
+    body.admin.admin-login:hover { background: #dc2626; }
 </style>
 </head>
 <body>
@@ -204,9 +202,8 @@ body.admin .admin-login { background: #ef4444; }
 </div>
 
 <div class="container">
-    <button class="admin-login" id="adminBtn" onclick="isAdmin ? logoutAdmin() : checkAdmin()">
-    🔐 Admin Login
-</button>
+    <button class="admin-login" id="adminBtn">🔐 Admin Login</button>
+
     <form id="addForm">
         <input type="hidden" id="editIndex">
         <input type="text" id="name" placeholder="Student name" required>
@@ -233,6 +230,8 @@ body.admin .admin-login { background: #ef4444; }
 <script>
 const PASS_MARK = 50;
 const AT_RISK_THRESHOLD = 55;
+const ADMIN_PASSWORD = "nqobile2026"; // Change this to your password
+
 let students = JSON.parse(localStorage.getItem('students')) || [
     { name: "Ephie", marks: [78, 65, 80] },
     { name: "Allegra", marks: [45, 50, 40] },
@@ -242,6 +241,7 @@ let students = JSON.parse(localStorage.getItem('students')) || [
 ];
 let chart;
 let filteredStudents = [...students];
+let isAdmin = localStorage.getItem('isAdmin') === 'true';
 
 function getAverage(marks) {
     let total = marks.reduce((a, b) => a + b, 0);
@@ -295,7 +295,38 @@ function toggleTheme() {
     renderChart();
 }
 
+function updateAdminUI() {
+    if (isAdmin) {
+        document.body.classList.add('admin');
+        document.getElementById('adminBtn').textContent = '🚪 Logout Admin';
+    } else {
+        document.body.classList.remove('admin');
+        document.getElementById('adminBtn').textContent = '🔐 Admin Login';
+    }
+}
+
+function toggleAdmin() {
+    if (!isAdmin) {
+        const pass = prompt("Enter admin password:");
+        if (pass === ADMIN_PASSWORD) {
+            isAdmin = true;
+            localStorage.setItem('isAdmin', 'true');
+            alert("Admin mode enabled");
+        } else if (pass!== null) {
+            alert("Wrong password");
+            return;
+        }
+    } else {
+        isAdmin = false;
+        localStorage.removeItem('isAdmin');
+        alert("Logged out of admin mode");
+    }
+    updateAdminUI();
+    render();
+}
+
 function deleteStudent(index) {
+    if (!isAdmin) return;
     const realIndex = students.findIndex(s => s.name === filteredStudents[index].name && s.marks.join() === filteredStudents[index].marks.join());
     if (confirm(`Delete ${students[realIndex].name}?`)) {
         students.splice(realIndex, 1);
@@ -304,6 +335,7 @@ function deleteStudent(index) {
 }
 
 function editStudent(index) {
+    if (!isAdmin) return;
     const realIndex = students.findIndex(s => s.name === filteredStudents[index].name && s.marks.join() === filteredStudents[index].marks.join());
     document.getElementById('editIndex').value = realIndex;
     document.getElementById('name').value = students[realIndex].name;
@@ -415,6 +447,7 @@ function render() {
 }
 
 function exportCSV() {
+    if (!isAdmin) return;
     let csv = "Name,Tests,Average,Grade,Status\n";
     students.forEach(s => {
         let avg = getAverage(s.marks);
@@ -432,6 +465,7 @@ function exportCSV() {
 }
 
 function importCSV(e) {
+    if (!isAdmin) return;
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -460,6 +494,7 @@ function importCSV(e) {
 
 document.getElementById("addForm").addEventListener("submit", e => {
     e.preventDefault();
+    if (!isAdmin) return;
     const name = document.getElementById("name").value.trim();
     const marks = document.getElementById("marks").value.split(",").map(m => parseFloat(m.trim())).filter(m =>!isNaN(m));
     const editIndex = document.getElementById("editIndex").value;
@@ -479,6 +514,7 @@ document.getElementById("exportBtn").addEventListener("click", exportCSV);
 document.getElementById("importBtn").addEventListener("click", () => document.getElementById("fileInput").click());
 document.getElementById("fileInput").addEventListener("change", importCSV);
 document.getElementById("clearBtn").addEventListener("click", () => {
+    if (!isAdmin) return;
     if (confirm("Delete all student data?")) {
         students = [];
         filterStudents();
@@ -487,41 +523,12 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 });
 document.getElementById("searchInput").addEventListener("input", filterStudents);
 document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+document.getElementById("adminBtn").addEventListener("click", toggleAdmin);
 
+// Init
 applyTheme();
+updateAdminUI();
 filterStudents();
-    // === ADMIN MODE ===
-const ADMIN_PASSWORD = "nqobile2026"; // Change this to your password
-let isAdmin = false;
-
-function checkAdmin() {
-    if (!isAdmin) {
-        const pass = prompt("Enter admin password to edit:");
-        if (pass === ADMIN_PASSWORD) {
-            isAdmin = true;
-            localStorage.setItem('isAdmin', 'true');
-            document.body.classList.add('admin');
-            alert("Admin mode enabled");
-            render();
-        } else if (pass !== null) {
-            alert("Wrong password");
-        }
-    }
-}
-
-function logoutAdmin() {
-    isAdmin = false;
-    localStorage.removeItem('isAdmin');
-    document.body.classList.remove('admin');
-    render();
-}
-
-// Check if admin on load
-if (localStorage.getItem('isAdmin') === 'true') {
-    isAdmin = true;
-    document.body.classList.add('admin');
-}
 </script>
 </body>
 </html>
-
