@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Grade Analyzer</title>
+
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: white;
+        margin: 0;
+        padding: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        color: #38bdf8;
+        margin-bottom: 30px;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .student-card {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        transition: transform 0.2s;
+    }
+
+    .student-card:hover {
+        transform: scale(1.02);
+    }
+
+    .student-name {
+        font-size: 20px;
+        font-weight: bold;
+        color: #facc15;
+    }
+
+    .marks {
+        margin: 10px 0;
+    }
+
+    .result {
+        font-weight: bold;
+        padding: 5px 10px;
+        border-radius: 6px;
+        display: inline-block;
+    }
+
+    .pass {
+        background: #22c55e;
+        color: black;
+    }
+
+    .fail {
+        background: #ef4444;
+        color: white;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>📊 Student Grade Analyzer</h1>
+
+<div class="container" id="output"></div>
+
+<script>
+
+// PASS MARK
+const PASS_MARK = 50
+
+// STUDENT DATA (you can add more)
+let students = [
+    { name: "Ephie", marks: [78, 65, 80] },
+    { name: "Allegra", marks: [45, 50, 40] },
+    { name: "Sean", marks: [90, 88, 92] },
+    { name: "Liam", marks: [30, 42, 39] },
+    { name: "Zara", marks: [60, 70, 65] }
+]
+
+// FUNCTION TO CALCULATE AVERAGE
+function getAverage(marks) {
+    let total = 0
+    for (let i = 0; i < marks.length; i++) {
+        total += marks[i]
+    }
+    return (total / marks.length).toFixed(1)
+}
+
+// DISPLAY FUNCTION
+let output = document.getElementById("output")
+
+students.forEach(student => {
+
+    let avg = getAverage(student.marks)
+    let status = avg >= PASS_MARK ? "PASS" : "FAIL"
+    let statusClass = avg >= PASS_MARK ? "pass" : "fail"
+
+    output.innerHTML += `
+        <div class="student-card">
+            <div class="student-name">${student.name}</div>
+            
+            <div class="marks">
+                <p>Summative Tests: ${student.marks.join(", ")}</p>
+                <p>Average: ${avg}%</p>
+            </div>
+
+            <div class="result ${statusClass}">
+                ${status}
+            </div>
+        </div>
+    `
+})
+
+</script>
+
+</body>
+</html>
