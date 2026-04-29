@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Grade Analyzer</title>
-
 <style>
     body {
         font-family: 'Segoe UI', sans-serif;
@@ -13,18 +12,17 @@
         margin: 0;
         padding: 20px;
     }
-
-    h1 {
+    h1 { text-align: center; color: #38bdf8; margin-bottom: 20px; }
+    .container { max-width: 900px; margin: auto; }
+    .summary {
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 25px;
         text-align: center;
-        color: #38bdf8;
-        margin-bottom: 30px;
+        font-size: 18px;
     }
-
-    .container {
-        max-width: 900px;
-        margin: auto;
-    }
-
     .student-card {
         background: #1e293b;
         border-radius: 12px;
@@ -33,95 +31,137 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         transition: transform 0.2s;
     }
-
-    .student-card:hover {
-        transform: scale(1.02);
-    }
-
-    .student-name {
-        font-size: 20px;
-        font-weight: bold;
-        color: #facc15;
-    }
-
-    .marks {
-        margin: 10px 0;
-    }
-
+    .student-card:hover { transform: scale(1.02); }
+    .student-name { font-size: 20px; font-weight: bold; color: #facc15; }
+    .marks { margin: 10px 0; font-size: 15px; }
     .result {
         font-weight: bold;
         padding: 5px 10px;
         border-radius: 6px;
         display: inline-block;
+        margin-right: 8px;
     }
-
-    .pass {
-        background: #22c55e;
-        color: black;
+    .pass { background: #22c55e; color: black; }
+    .fail { background: #ef4444; color: white; }
+    .grade { background: #38bdf8; color: black; }
+    form {
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
     }
-
-    .fail {
-        background: #ef4444;
-        color: white;
+    input, button {
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        margin: 5px 0;
+        font-size: 15px;
     }
+    input { width: calc(100% - 20px); background: #0f172a; color: white; }
+    button {
+        background: #38bdf8;
+        color: #0f172a;
+        font-weight: bold;
+        cursor: pointer;
+        width: 100%;
+    }
+    button:hover { background: #0ea5e9; }
 </style>
 </head>
-
 <body>
-
 <h1>📊 Student Grade Analyzer</h1>
-
-<div class="container" id="output"></div>
+<div class="container">
+    <form id="addForm">
+        <input type="text" id="name" placeholder="Student name" required>
+        <input type="text" id="marks" placeholder="Marks separated by commas, e.g. 78,65,80" required>
+        <button type="submit">Add Student</button>
+    </form>
+    <div class="summary" id="summary"></div>
+    <div id="output"></div>
+</div>
 
 <script>
-
-// PASS MARK
-const PASS_MARK = 50
-
-// STUDENT DATA (you can add more)
-let students = [
+const PASS_MARK = 50;
+let students = JSON.parse(localStorage.getItem('students')) || [
     { name: "Ephie", marks: [78, 65, 80] },
     { name: "Allegra", marks: [45, 50, 40] },
     { name: "Sean", marks: [90, 88, 92] },
     { name: "Liam", marks: [30, 42, 39] },
     { name: "Zara", marks: [60, 70, 65] }
-]
+];
 
-// FUNCTION TO CALCULATE AVERAGE
 function getAverage(marks) {
-    let total = 0
-    for (let i = 0; i < marks.length; i++) {
-        total += marks[i]
-    }
-    return (total / marks.length).toFixed(1)
+    let total = marks.reduce((a, b) => a + b, 0);
+    return (total / marks.length).toFixed(1);
 }
 
-// DISPLAY FUNCTION
-let output = document.getElementById("output")
+function getGrade(avg) {
+    if (avg >= 80) return "A";
+    if (avg >= 70) return "B";
+    if (avg >= 60) return "C";
+    if (avg >= 50) return "D";
+    return "F";
+}
 
-students.forEach(student => {
+function getMinMax(marks) {
+    return { min: Math.min(...marks), max: Math.max(...marks) };
+}
 
-    let avg = getAverage(student.marks)
-    let status = avg >= PASS_MARK ? "PASS" : "FAIL"
-    let statusClass = avg >= PASS_MARK ? "pass" : "fail"
+function saveData() {
+    localStorage.setItem('students', JSON.stringify(students));
+}
 
-    output.innerHTML += `
-        <div class="student-card">
-            <div class="student-name">${student.name}</div>
-            
-            <div class="marks">
-                <p>Summative Tests: ${student.marks.join(", ")}</p>
-                <p>Average: ${avg}%</p>
+function render() {
+    const output = document.getElementById("output");
+    const summary = document.getElementById("summary");
+    output.innerHTML = "";
+    
+    let totalAvg = 0;
+    let passed = 0;
+
+    students.forEach(student => {
+        let avg = getAverage(student.marks);
+        totalAvg += parseFloat(avg);
+        let status = avg >= PASS_MARK ? "PASS" : "FAIL";
+        let statusClass = avg >= PASS_MARK ? "pass" : "fail";
+        if (status === "PASS") passed++;
+        let {min, max} = getMinMax(student.marks);
+        let grade = getGrade(avg);
+
+        output.innerHTML += `
+            <div class="student-card">
+                <div class="student-name">${student.name}</div>
+                <div class="marks">
+                    <p>Tests: ${student.marks.join(", ")}</p>
+                    <p>Average: ${avg}% | Highest: ${max} | Lowest: ${min}</p>
+                </div>
+                <div class="result ${statusClass}">${status}</div>
+                <div class="result grade">Grade: ${grade}</div>
             </div>
+        `;
+    });
 
-            <div class="result ${statusClass}">
-                ${status}
-            </div>
-        </div>
-    `
-})
+    let classAvg = (totalAvg / students.length).toFixed(1);
+    summary.innerHTML = `
+        Class Average: <strong>${classAvg}%</strong> | 
+        Passed: <strong>${passed}/${students.length}</strong> | 
+        Pass Rate: <strong>${((passed/students.length)*100).toFixed(0)}%</strong>
+    `;
+    saveData();
+}
 
+document.getElementById("addForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const marks = document.getElementById("marks").value.split(",").map(m => parseFloat(m.trim())).filter(m => !isNaN(m));
+    if (name && marks.length) {
+        students.push({ name, marks });
+        render();
+        e.target.reset();
+    }
+});
+
+render();
 </script>
-
 </body>
 </html>
