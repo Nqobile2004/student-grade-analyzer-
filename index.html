@@ -14,36 +14,38 @@
         padding: 20px;
     }
     h1 { text-align: center; color: #38bdf8; margin-bottom: 20px; }
-   .container { max-width: 900px; margin: auto; }
-   .summary,.chart-box {
+ .container { max-width: 900px; margin: auto; }
+ .summary,.chart-box {
         background: #0f172a;
         border: 1px solid #334155;
         border-radius: 12px;
         padding: 15px;
         margin-bottom: 25px;
     }
-   .summary { text-align: center; font-size: 18px; }
-   .student-card {
+ .summary { text-align: center; font-size: 18px; }
+ .student-card {
         background: #1e293b;
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 20px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         transition: transform 0.2s;
+        position: relative;
     }
-   .student-card:hover { transform: scale(1.02); }
-   .student-name { font-size: 20px; font-weight: bold; color: #facc15; }
-   .marks { margin: 10px 0; font-size: 15px; }
-   .result {
+ .student-card:hover { transform: scale(1.02); }
+ .student-name { font-size: 20px; font-weight: bold; color: #facc15; }
+ .marks { margin: 10px 0; font-size: 15px; }
+ .result {
         font-weight: bold;
         padding: 5px 10px;
         border-radius: 6px;
         display: inline-block;
         margin-right: 8px;
+        margin-top: 5px;
     }
-   .pass { background: #22c55e; color: black; }
-   .fail { background: #ef4444; color: white; }
-   .grade { background: #38bdf8; color: black; }
+ .pass { background: #22c55e; color: black; }
+ .fail { background: #ef4444; color: white; }
+ .grade { background: #38bdf8; color: black; }
     form {
         background: #1e293b;
         padding: 20px;
@@ -66,23 +68,44 @@
         width: 100%;
     }
     button:hover { background: #0ea5e9; }
-   .btn-group {
+ .btn-group {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
         margin-bottom: 25px;
     }
-   .btn-secondary { background: #334155; color: white; }
-   .btn-secondary:hover { background: #475569; }
+ .btn-secondary { background: #334155; color: white; }
+ .btn-secondary:hover { background: #475569; }
+ .card-actions {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        display: flex;
+        gap: 8px;
+    }
+ .action-btn {
+        background: #334155;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        width: auto;
+    }
+ .action-btn:hover { background: #475569; }
+ .delete-btn { background: #ef4444; }
+ .delete-btn:hover { background: #dc2626; }
 </style>
 </head>
 <body>
 <h1>📊 Student Grade Analyzer</h1>
 <div class="container">
     <form id="addForm">
+        <input type="hidden" id="editIndex">
         <input type="text" id="name" placeholder="Student name" required>
         <input type="text" id="marks" placeholder="Marks separated by commas, e.g. 78,65,80" required>
-        <button type="submit">Add Student</button>
+        <button type="submit" id="submitBtn">Add Student</button>
     </form>
 
     <div class="btn-group">
@@ -129,6 +152,27 @@ function saveData() {
     localStorage.setItem('students', JSON.stringify(students));
 }
 
+function deleteStudent(index) {
+    if (confirm(`Delete ${students[index].name}?`)) {
+        students.splice(index, 1);
+        render();
+    }
+}
+
+function editStudent(index) {
+    document.getElementById('editIndex').value = index;
+    document.getElementById('name').value = students[index].name;
+    document.getElementById('marks').value = students[index].marks.join(', ');
+    document.getElementById('submitBtn').textContent = 'Update Student';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetForm() {
+    document.getElementById('editIndex').value = '';
+    document.getElementById('submitBtn').textContent = 'Add Student';
+    document.getElementById('addForm').reset();
+}
+
 function renderChart() {
     const ctx = document.getElementById('gradeChart');
     const labels = students.map(s => s.name);
@@ -168,7 +212,7 @@ function render() {
     let totalAvg = 0;
     let passed = 0;
 
-    students.forEach(student => {
+    students.forEach((student, index) => {
         let avg = getAverage(student.marks);
         totalAvg += parseFloat(avg);
         let status = avg >= PASS_MARK? "PASS" : "FAIL";
@@ -179,6 +223,10 @@ function render() {
 
         output.innerHTML += `
             <div class="student-card">
+                <div class="card-actions">
+                    <button class="action-btn" onclick="editStudent(${index})">Edit</button>
+                    <button class="action-btn delete-btn" onclick="deleteStudent(${index})">Delete</button>
+                </div>
                 <div class="student-name">${student.name}</div>
                 <div class="marks">
                     <p>Tests: ${student.marks.join(", ")}</p>
@@ -221,10 +269,16 @@ document.getElementById("addForm").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("name").value.trim();
     const marks = document.getElementById("marks").value.split(",").map(m => parseFloat(m.trim())).filter(m =>!isNaN(m));
+    const editIndex = document.getElementById("editIndex").value;
+
     if (name && marks.length) {
-        students.push({ name, marks });
+        if (editIndex === '') {
+            students.push({ name, marks });
+        } else {
+            students[editIndex] = { name, marks };
+        }
         render();
-        e.target.reset();
+        resetForm();
     }
 });
 
@@ -233,6 +287,7 @@ document.getElementById("clearBtn").addEventListener("click", () => {
     if (confirm("Delete all student data?")) {
         students = [];
         render();
+        resetForm();
     }
 });
 
