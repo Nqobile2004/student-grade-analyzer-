@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Grade Analyzer</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
     body {
         font-family: 'Segoe UI', sans-serif;
@@ -13,17 +14,16 @@
         padding: 20px;
     }
     h1 { text-align: center; color: #38bdf8; margin-bottom: 20px; }
-    .container { max-width: 900px; margin: auto; }
-    .summary {
+   .container { max-width: 900px; margin: auto; }
+   .summary,.chart-box {
         background: #0f172a;
         border: 1px solid #334155;
         border-radius: 12px;
         padding: 15px;
         margin-bottom: 25px;
-        text-align: center;
-        font-size: 18px;
     }
-    .student-card {
+   .summary { text-align: center; font-size: 18px; }
+   .student-card {
         background: #1e293b;
         border-radius: 12px;
         padding: 20px;
@@ -31,19 +31,19 @@
         box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         transition: transform 0.2s;
     }
-    .student-card:hover { transform: scale(1.02); }
-    .student-name { font-size: 20px; font-weight: bold; color: #facc15; }
-    .marks { margin: 10px 0; font-size: 15px; }
-    .result {
+   .student-card:hover { transform: scale(1.02); }
+   .student-name { font-size: 20px; font-weight: bold; color: #facc15; }
+   .marks { margin: 10px 0; font-size: 15px; }
+   .result {
         font-weight: bold;
         padding: 5px 10px;
         border-radius: 6px;
         display: inline-block;
         margin-right: 8px;
     }
-    .pass { background: #22c55e; color: black; }
-    .fail { background: #ef4444; color: white; }
-    .grade { background: #38bdf8; color: black; }
+   .pass { background: #22c55e; color: black; }
+   .fail { background: #ef4444; color: white; }
+   .grade { background: #38bdf8; color: black; }
     form {
         background: #1e293b;
         padding: 20px;
@@ -66,6 +66,14 @@
         width: 100%;
     }
     button:hover { background: #0ea5e9; }
+   .btn-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+   .btn-secondary { background: #334155; color: white; }
+   .btn-secondary:hover { background: #475569; }
 </style>
 </head>
 <body>
@@ -76,7 +84,16 @@
         <input type="text" id="marks" placeholder="Marks separated by commas, e.g. 78,65,80" required>
         <button type="submit">Add Student</button>
     </form>
+
+    <div class="btn-group">
+        <button class="btn-secondary" id="exportBtn">Export CSV</button>
+        <button class="btn-secondary" id="clearBtn">Clear All Data</button>
+    </div>
+
     <div class="summary" id="summary"></div>
+    <div class="chart-box">
+        <canvas id="gradeChart"></canvas>
+    </div>
     <div id="output"></div>
 </div>
 
@@ -89,6 +106,7 @@ let students = JSON.parse(localStorage.getItem('students')) || [
     { name: "Liam", marks: [30, 42, 39] },
     { name: "Zara", marks: [60, 70, 65] }
 ];
+let chart;
 
 function getAverage(marks) {
     let total = marks.reduce((a, b) => a + b, 0);
@@ -111,19 +129,50 @@ function saveData() {
     localStorage.setItem('students', JSON.stringify(students));
 }
 
+function renderChart() {
+    const ctx = document.getElementById('gradeChart');
+    const labels = students.map(s => s.name);
+    const data = students.map(s => parseFloat(getAverage(s.marks)));
+    const colors = data.map(avg => avg >= PASS_MARK? '#22c55e' : '#ef4444');
+
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average %',
+                data: data,
+                backgroundColor: colors,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Class Averages', color: '#e2e8f0' }
+            },
+            scales: {
+                y: { beginAtZero: true, max: 100, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+            }
+        }
+    });
+}
+
 function render() {
     const output = document.getElementById("output");
     const summary = document.getElementById("summary");
     output.innerHTML = "";
-    
+
     let totalAvg = 0;
     let passed = 0;
 
     students.forEach(student => {
         let avg = getAverage(student.marks);
         totalAvg += parseFloat(avg);
-        let status = avg >= PASS_MARK ? "PASS" : "FAIL";
-        let statusClass = avg >= PASS_MARK ? "pass" : "fail";
+        let status = avg >= PASS_MARK? "PASS" : "FAIL";
+        let statusClass = avg >= PASS_MARK? "pass" : "fail";
         if (status === "PASS") passed++;
         let {min, max} = getMinMax(student.marks);
         let grade = getGrade(avg);
@@ -141,23 +190,49 @@ function render() {
         `;
     });
 
-    let classAvg = (totalAvg / students.length).toFixed(1);
+    let classAvg = students.length? (totalAvg / students.length).toFixed(1) : 0;
     summary.innerHTML = `
-        Class Average: <strong>${classAvg}%</strong> | 
-        Passed: <strong>${passed}/${students.length}</strong> | 
-        Pass Rate: <strong>${((passed/students.length)*100).toFixed(0)}%</strong>
+        Class Average: <strong>${classAvg}%</strong> |
+        Passed: <strong>${passed}/${students.length}</strong> |
+        Pass Rate: <strong>${students.length? ((passed/students.length)*100).toFixed(0) : 0}%</strong>
     `;
+    renderChart();
     saveData();
+}
+
+function exportCSV() {
+    let csv = "Name,Tests,Average,Grade,Status\n";
+    students.forEach(s => {
+        let avg = getAverage(s.marks);
+        let grade = getGrade(avg);
+        let status = avg >= PASS_MARK? "PASS" : "FAIL";
+        csv += `"${s.name}","${s.marks.join('; ')}",${avg},${grade},${status}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'student-grades.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
 }
 
 document.getElementById("addForm").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("name").value.trim();
-    const marks = document.getElementById("marks").value.split(",").map(m => parseFloat(m.trim())).filter(m => !isNaN(m));
+    const marks = document.getElementById("marks").value.split(",").map(m => parseFloat(m.trim())).filter(m =>!isNaN(m));
     if (name && marks.length) {
         students.push({ name, marks });
         render();
         e.target.reset();
+    }
+});
+
+document.getElementById("exportBtn").addEventListener("click", exportCSV);
+document.getElementById("clearBtn").addEventListener("click", () => {
+    if (confirm("Delete all student data?")) {
+        students = [];
+        render();
     }
 });
 
