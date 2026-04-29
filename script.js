@@ -1,5 +1,6 @@
-let students = JSON.parse(localStorage.getItem("students")) || [];
+let students = [];
 
+// 🔤 Grade calculation
 function getGrade(avg) {
   if (avg >= 75) return "A";
   if (avg >= 65) return "B";
@@ -8,20 +9,22 @@ function getGrade(avg) {
   return "F";
 }
 
+// 🧠 Insight system
 function getInsight(avg) {
   if (avg < 50) return "⚠️ At risk of failing";
   if (avg >= 75) return "🔥 Excellent performance";
   return "👍 Average performance";
 }
 
-function addStudent() {
+// ➕ Add student (saves to backend)
+async function addStudent() {
   const name = document.getElementById("name").value;
   const math = +document.getElementById("math").value;
   const science = +document.getElementById("science").value;
   const english = +document.getElementById("english").value;
 
-  if (!name || math === 0 || science === 0 || english === 0) {
-    alert("Please fill all fields correctly");
+  if (!name || !math || !science || !english) {
+    alert("Please fill all fields");
     return;
   }
 
@@ -31,19 +34,38 @@ function addStudent() {
     name,
     average: Number(average),
     grade: getGrade(average),
-    status: average >= 50 ? "Pass" : "Fail",
-    insight: getInsight(average),
-    marks: [math, science, english]
+    status: average >= 50 ? "Pass" : "Fail"
   };
 
-  students.push(student);
+  try {
+    await fetch("http://localhost:5000/students/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(student)
+    });
 
-  localStorage.setItem("students", JSON.stringify(students));
+    loadStudents(); // refresh list
+    clearInputs();
 
-  displayStudents();
-  clearInputs();
+  } catch (error) {
+    console.error("Error adding student:", error);
+  }
 }
 
+// 📥 Load students from backend
+async function loadStudents() {
+  try {
+    const res = await fetch("http://localhost:5000/students");
+    students = await res.json();
+    displayStudents();
+  } catch (error) {
+    console.error("Error loading students:", error);
+  }
+}
+
+// 📋 Display in table
 function displayStudents() {
   const tableBody = document.getElementById("tableBody");
   tableBody.innerHTML = "";
@@ -59,12 +81,13 @@ function displayStudents() {
         <td class="${student.status === "Pass" ? "pass" : "fail"}">
           ${student.status}
         </td>
-        <td>${student.insight}</td>
+        <td>${getInsight(student.average)}</td>
       </tr>
     `;
     tableBody.innerHTML += row;
   });
 
+  // 🏆 Top student
   if (students.length > 0) {
     document.getElementById("topStudent").innerText =
       "🏆 " + students[0].name + " (" + students[0].average + "%)";
@@ -73,6 +96,7 @@ function displayStudents() {
   renderChart();
 }
 
+// 📊 Chart using :contentReference[oaicite:0]{index=0}
 function renderChart() {
   const ctx = document.getElementById("chart").getContext("2d");
 
@@ -95,6 +119,7 @@ function renderChart() {
   });
 }
 
+// 🧹 Clear inputs
 function clearInputs() {
   document.getElementById("name").value = "";
   document.getElementById("math").value = "";
@@ -102,4 +127,5 @@ function clearInputs() {
   document.getElementById("english").value = "";
 }
 
-displayStudents();
+// 🚀 Load data on page start
+loadStudents();
