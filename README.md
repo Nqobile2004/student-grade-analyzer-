@@ -10,6 +10,9 @@ A simple, client-side web app to calculate student averages, assign grades, and 
 - Class summary: average, pass count, pass rate
 - Saves data to browser with localStorage
 - Responsive dark theme
+ - Live bar chart of class averages using Chart.js
+- Export all results to CSV
+- Clear data button for resets
 
 ### 🚀 Live Demo
 [View it on GitHub Pages](https://nqobile2004.github.io/student-grade-analyzer-/)
