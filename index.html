@@ -6,36 +6,74 @@
 <title>Student Grade Analyzer</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
+    :root {
+        --bg-gradient: linear-gradient(135deg, #0f172a, #1e293b);
+        --card-bg: #1e293b;
+        --card-border: #334155;
+        --text: #ffffff;
+        --text-muted: #94a3b8;
+        --input-bg: #0f172a;
+        --accent: #38bdf8;
+        --accent-hover: #0ea5e9;
+        --btn-secondary: #334155;
+        --btn-secondary-hover: #475569;
+    }
+    body.light {
+        --bg-gradient: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+        --card-bg: #ffffff;
+        --card-border: #cbd5e1;
+        --text: #0f172a;
+        --text-muted: #475569;
+        --input-bg: #f8fafc;
+    }
     body {
         font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        color: white;
+        background: var(--bg-gradient);
+        color: var(--text);
         margin: 0;
         padding: 20px;
+        transition: all 0.3s;
     }
-    h1 { text-align: center; color: #38bdf8; margin-bottom: 20px; }
- .container { max-width: 900px; margin: auto; }
- .summary,.chart-box {
-        background: #0f172a;
-        border: 1px solid #334155;
+    h1 { text-align: center; color: var(--accent); margin-bottom: 10px; }
+.header-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+.theme-toggle {
+        background: var(--btn-secondary);
+        color: var(--text);
+        border: none;
+        border-radius: 8px;
+        padding: 8px 14px;
+        cursor: pointer;
+        font-size: 14px;
+        width: auto;
+    }
+.container { max-width: 900px; margin: auto; }
+.summary,.chart-box {
+        background: var(--input-bg);
+        border: 1px solid var(--card-border);
         border-radius: 12px;
         padding: 15px;
         margin-bottom: 25px;
     }
- .summary { text-align: center; font-size: 18px; }
- .student-card {
-        background: #1e293b;
+.summary { text-align: center; font-size: 18px; }
+.student-card {
+        background: var(--card-bg);
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         transition: transform 0.2s;
         position: relative;
     }
- .student-card:hover { transform: scale(1.02); }
- .student-name { font-size: 20px; font-weight: bold; color: #facc15; }
- .marks { margin: 10px 0; font-size: 15px; }
- .result {
+.student-card:hover { transform: scale(1.02); }
+.student-name { font-size: 20px; font-weight: bold; color: #facc15; }
+.marks { margin: 10px 0; font-size: 15px; color: var(--text-muted); }
+.result {
         font-weight: bold;
         padding: 5px 10px;
         border-radius: 6px;
@@ -43,49 +81,51 @@
         margin-right: 8px;
         margin-top: 5px;
     }
- .pass { background: #22c55e; color: black; }
- .fail { background: #ef4444; color: white; }
- .grade { background: #38bdf8; color: black; }
+.pass { background: #22c55e; color: black; }
+.fail { background: #ef4444; color: white; }
+.grade { background: var(--accent); color: black; }
     form {
-        background: #1e293b;
+        background: var(--card-bg);
         padding: 20px;
         border-radius: 12px;
         margin-bottom: 25px;
     }
-    input, button {
+    input, button, select {
         padding: 10px;
         border-radius: 8px;
-        border: none;
+        border: 1px solid var(--card-border);
         margin: 5px 0;
         font-size: 15px;
+        font-family: inherit;
     }
-    input { width: calc(100% - 20px); background: #0f172a; color: white; }
+    input { width: calc(100% - 22px); background: var(--input-bg); color: var(--text); }
     button {
-        background: #38bdf8;
+        background: var(--accent);
         color: #0f172a;
         font-weight: bold;
         cursor: pointer;
         width: 100%;
+        border: none;
     }
-    button:hover { background: #0ea5e9; }
- .btn-group {
+    button:hover { background: var(--accent-hover); }
+.btn-group {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 10px;
         margin-bottom: 25px;
     }
- .btn-secondary { background: #334155; color: white; }
- .btn-secondary:hover { background: #475569; }
- .card-actions {
+.btn-secondary { background: var(--btn-secondary); color: var(--text); }
+.btn-secondary:hover { background: var(--btn-secondary-hover); }
+.card-actions {
         position: absolute;
         top: 15px;
         right: 15px;
         display: flex;
         gap: 8px;
     }
- .action-btn {
-        background: #334155;
-        color: white;
+.action-btn {
+        background: var(--btn-secondary);
+        color: var(--text);
         border: none;
         border-radius: 6px;
         padding: 6px 10px;
@@ -93,13 +133,25 @@
         cursor: pointer;
         width: auto;
     }
- .action-btn:hover { background: #475569; }
- .delete-btn { background: #ef4444; }
- .delete-btn:hover { background: #dc2626; }
+.action-btn:hover { background: var(--btn-secondary-hover); }
+.delete-btn { background: #ef4444; color: white; }
+.delete-btn:hover { background: #dc2626; }
+.search-bar {
+        width: calc(100% - 22px);
+        margin-bottom: 15px;
+        background: var(--input-bg);
+        color: var(--text);
+    }
+.file-input { display: none; }
+.hidden { display: none; }
 </style>
 </head>
 <body>
-<h1>📊 Student Grade Analyzer</h1>
+<div class="header-bar">
+    <h1>📊 Student Grade Analyzer</h1>
+    <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+</div>
+
 <div class="container">
     <form id="addForm">
         <input type="hidden" id="editIndex">
@@ -108,9 +160,13 @@
         <button type="submit" id="submitBtn">Add Student</button>
     </form>
 
+    <input type="text" class="search-bar" id="searchInput" placeholder="Search students...">
+
     <div class="btn-group">
         <button class="btn-secondary" id="exportBtn">Export CSV</button>
-        <button class="btn-secondary" id="clearBtn">Clear All Data</button>
+        <button class="btn-secondary" id="importBtn">Import CSV</button>
+        <input type="file" id="fileInput" class="file-input" accept=".csv">
+        <button class="btn-secondary" id="clearBtn">Clear All</button>
     </div>
 
     <div class="summary" id="summary"></div>
@@ -123,13 +179,14 @@
 <script>
 const PASS_MARK = 50;
 let students = JSON.parse(localStorage.getItem('students')) || [
-    { name: "Nqobile", marks: [78, 65, 80] },
-    { name: "Lonwabo", marks: [45, 50, 40] },
-    { name: "Sniko", marks: [90, 88, 92] },
-    { name: "Busiswa", marks: [30, 42, 39] },
-    { name: "Ntobeko", marks: [60, 70, 65] }
+    { name: "Ephie", marks: [78, 65, 80] },
+    { name: "Allegra", marks: [45, 50, 40] },
+    { name: "Sean", marks: [90, 88, 92] },
+    { name: "Liam", marks: [30, 42, 39] },
+    { name: "Zara", marks: [60, 70, 65] }
 ];
 let chart;
+let filteredStudents = [...students];
 
 function getAverage(marks) {
     let total = marks.reduce((a, b) => a + b, 0);
@@ -152,17 +209,37 @@ function saveData() {
     localStorage.setItem('students', JSON.stringify(students));
 }
 
+function applyTheme() {
+    const theme = localStorage.getItem('theme') || 'dark';
+    if (theme === 'light') {
+        document.body.classList.add('light');
+        document.getElementById('themeToggle').textContent = '☀️ Light';
+    } else {
+        document.body.classList.remove('light');
+        document.getElementById('themeToggle').textContent = '🌙 Dark';
+    }
+}
+
+function toggleTheme() {
+    const current = localStorage.getItem('theme') || 'dark';
+    localStorage.setItem('theme', current === 'dark'? 'light' : 'dark');
+    applyTheme();
+    renderChart();
+}
+
 function deleteStudent(index) {
-    if (confirm(`Delete ${students[index].name}?`)) {
-        students.splice(index, 1);
-        render();
+    const realIndex = students.findIndex(s => s.name === filteredStudents[index].name && s.marks.join() === filteredStudents[index].marks.join());
+    if (confirm(`Delete ${students[realIndex].name}?`)) {
+        students.splice(realIndex, 1);
+        filterStudents();
     }
 }
 
 function editStudent(index) {
-    document.getElementById('editIndex').value = index;
-    document.getElementById('name').value = students[index].name;
-    document.getElementById('marks').value = students[index].marks.join(', ');
+    const realIndex = students.findIndex(s => s.name === filteredStudents[index].name && s.marks.join() === filteredStudents[index].marks.join());
+    document.getElementById('editIndex').value = realIndex;
+    document.getElementById('name').value = students[realIndex].name;
+    document.getElementById('marks').value = students[realIndex].marks.join(', ');
     document.getElementById('submitBtn').textContent = 'Update Student';
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -173,11 +250,19 @@ function resetForm() {
     document.getElementById('addForm').reset();
 }
 
+function filterStudents() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    filteredStudents = students.filter(s => s.name.toLowerCase().includes(query));
+    render();
+}
+
 function renderChart() {
     const ctx = document.getElementById('gradeChart');
-    const labels = students.map(s => s.name);
-    const data = students.map(s => parseFloat(getAverage(s.marks)));
+    const labels = filteredStudents.map(s => s.name);
+    const data = filteredStudents.map(s => parseFloat(getAverage(s.marks)));
     const colors = data.map(avg => avg >= PASS_MARK? '#22c55e' : '#ef4444');
+    const textColor = document.body.classList.contains('light')? '#475569' : '#e2e8f0';
+    const gridColor = document.body.classList.contains('light')? '#cbd5e1' : '#334155';
 
     if (chart) chart.destroy();
     chart = new Chart(ctx, {
@@ -194,11 +279,11 @@ function renderChart() {
         options: {
             plugins: {
                 legend: { display: false },
-                title: { display: true, text: 'Class Averages', color: '#e2e8f0' }
+                title: { display: true, text: 'Class Averages', color: textColor }
             },
             scales: {
-                y: { beginAtZero: true, max: 100, ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-                x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                y: { beginAtZero: true, max: 100, ticks: { color: textColor }, grid: { color: gridColor } },
+                x: { ticks: { color: textColor }, grid: { display: false } }
             }
         }
     });
@@ -212,7 +297,11 @@ function render() {
     let totalAvg = 0;
     let passed = 0;
 
-    students.forEach((student, index) => {
+    if (filteredStudents.length === 0) {
+        output.innerHTML = `<div class="student-card" style="text-align:center;">No students found</div>`;
+    }
+
+    filteredStudents.forEach((student, index) => {
         let avg = getAverage(student.marks);
         totalAvg += parseFloat(avg);
         let status = avg >= PASS_MARK? "PASS" : "FAIL";
@@ -238,11 +327,12 @@ function render() {
         `;
     });
 
-    let classAvg = students.length? (totalAvg / students.length).toFixed(1) : 0;
+    let classAvg = filteredStudents.length? (totalAvg / filteredStudents.length).toFixed(1) : 0;
     summary.innerHTML = `
-        Class Average: <strong>${classAvg}%</strong> |
-        Passed: <strong>${passed}/${students.length}</strong> |
-        Pass Rate: <strong>${students.length? ((passed/students.length)*100).toFixed(0) : 0}%</strong>
+        Showing: <strong>${filteredStudents.length}/${students.length}</strong> |
+        Class Avg: <strong>${classAvg}%</strong> |
+        Passed: <strong>${passed}/${filteredStudents.length}</strong> |
+        Pass Rate: <strong>${filteredStudents.length? ((passed/filteredStudents.length)*100).toFixed(0) : 0}%</strong>
     `;
     renderChart();
     saveData();
@@ -265,6 +355,33 @@ function exportCSV() {
     window.URL.revokeObjectURL(url);
 }
 
+function importCSV(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const lines = event.target.result.split('\n').slice(1);
+        const imported = [];
+        lines.forEach(line => {
+            if (!line.trim()) return;
+            const parts = line.split(',');
+            if (parts.length >= 2) {
+                const name = parts[0].replace(/"/g, '').trim();
+                const marksStr = parts[1].replace(/"/g, '').trim();
+                const marks = marksStr.split(';').map(m => parseFloat(m.trim())).filter(m =>!isNaN(m));
+                if (name && marks.length) imported.push({ name, marks });
+            }
+        });
+        if (imported.length) {
+            students = students.concat(imported);
+            filterStudents();
+            alert(`Imported ${imported.length} students`);
+        }
+        e.target.value = '';
+    };
+    reader.readAsText(file);
+}
+
 document.getElementById("addForm").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("name").value.trim();
@@ -277,21 +394,26 @@ document.getElementById("addForm").addEventListener("submit", e => {
         } else {
             students[editIndex] = { name, marks };
         }
-        render();
+        filterStudents();
         resetForm();
     }
 });
 
 document.getElementById("exportBtn").addEventListener("click", exportCSV);
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("fileInput").click());
+document.getElementById("fileInput").addEventListener("change", importCSV);
 document.getElementById("clearBtn").addEventListener("click", () => {
     if (confirm("Delete all student data?")) {
         students = [];
-        render();
+        filterStudents();
         resetForm();
     }
 });
+document.getElementById("searchInput").addEventListener("input", filterStudents);
+document.getElementById("themeToggle").addEventListener("click", toggleTheme);
 
-render();
+applyTheme();
+filterStudents();
 </script>
 </body>
 </html>
