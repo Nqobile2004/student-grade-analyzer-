@@ -459,6 +459,37 @@ document.getElementById("themeToggle").addEventListener("click", toggleTheme);
 
 applyTheme();
 filterStudents();
+    // === ADMIN MODE ===
+const ADMIN_PASSWORD = "nqobile2026"; // Change this to your password
+let isAdmin = false;
+
+function checkAdmin() {
+    if (!isAdmin) {
+        const pass = prompt("Enter admin password to edit:");
+        if (pass === ADMIN_PASSWORD) {
+            isAdmin = true;
+            localStorage.setItem('isAdmin', 'true');
+            document.body.classList.add('admin');
+            alert("Admin mode enabled");
+            render();
+        } else if (pass !== null) {
+            alert("Wrong password");
+        }
+    }
+}
+
+function logoutAdmin() {
+    isAdmin = false;
+    localStorage.removeItem('isAdmin');
+    document.body.classList.remove('admin');
+    render();
+}
+
+// Check if admin on load
+if (localStorage.getItem('isAdmin') === 'true') {
+    isAdmin = true;
+    document.body.classList.add('admin');
+}
 </script>
 </body>
 </html>
